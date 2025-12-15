@@ -3,87 +3,45 @@ import { getMoonPhase } from '../lib/MoonData.js';
 
 /**
  * Generate HTML for moon phase visualization
- * Uses 8-phase system with accurate shapes
+ * Uses Unicode moon phase emoji for reliable, accurate display
  * @param {number} degrees - Moon phase in degrees (0=new, 180=full)
  * @param {number} illumination - Illumination percentage
+ * @param {number} size - Font size in pixels
  * @returns {string} HTML for moon visualization
  */
 function getMoonPhaseHTML(degrees, illumination, size = 14) {
-    const moonColor = '#fef9c3'; // Yellow-100
-    const shadowColor = '#1e293b'; // Slate-800
-    const halfSize = size / 2;
-
-    // Determine phase based on degrees
-    // 0-22.5: New Moon (dark)
-    // 22.5-67.5: Waxing Crescent (right lit, thin curve)
-    // 67.5-112.5: First Quarter (right half lit)
-    // 112.5-157.5: Waxing Gibbous (mostly lit, left shadow curve)
-    // 157.5-202.5: Full Moon (fully lit)
-    // 202.5-247.5: Waning Gibbous (mostly lit, right shadow curve)
-    // 247.5-292.5: Last Quarter (left half lit)
-    // 292.5-337.5: Waning Crescent (left lit, thin curve)
-    // 337.5-360: New Moon (dark)
-
     const deg = degrees % 360;
 
-    // New Moon (nearly dark)
+    // 8-phase moon emoji mapping
+    // 🌑 New Moon (0°)
+    // 🌒 Waxing Crescent (45°)
+    // 🌓 First Quarter (90°)
+    // 🌔 Waxing Gibbous (135°)
+    // 🌕 Full Moon (180°)
+    // 🌖 Waning Gibbous (225°)
+    // 🌗 Last Quarter (270°)
+    // 🌘 Waning Crescent (315°)
+
+    let emoji;
     if (deg < 22.5 || deg >= 337.5) {
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};border:1px solid rgba(254,249,195,0.2);box-sizing:border-box;"></div>`;
+        emoji = '🌑'; // New Moon
+    } else if (deg < 67.5) {
+        emoji = '🌒'; // Waxing Crescent
+    } else if (deg < 112.5) {
+        emoji = '🌓'; // First Quarter
+    } else if (deg < 157.5) {
+        emoji = '🌔'; // Waxing Gibbous
+    } else if (deg < 202.5) {
+        emoji = '🌕'; // Full Moon
+    } else if (deg < 247.5) {
+        emoji = '🌖'; // Waning Gibbous
+    } else if (deg < 292.5) {
+        emoji = '🌗'; // Last Quarter
+    } else {
+        emoji = '🌘'; // Waning Crescent
     }
 
-    // Full Moon (fully lit)
-    if (deg >= 157.5 && deg < 202.5) {
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};box-shadow:0 0 ${size / 3}px rgba(254,249,195,0.6);"></div>`;
-    }
-
-    // First Quarter (right half lit) - straight line division
-    if (deg >= 67.5 && deg < 112.5) {
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(to right, ${shadowColor} 50%, ${moonColor} 50%);"></div>`;
-    }
-
-    // Last Quarter (left half lit) - straight line division
-    if (deg >= 247.5 && deg < 292.5) {
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(to left, ${shadowColor} 50%, ${moonColor} 50%);"></div>`;
-    }
-
-    // Waxing Crescent (22.5-67.5) - right edge lit, thin crescent
-    if (deg >= 22.5 && deg < 67.5) {
-        const ratio = (deg - 22.5) / 45; // 0 to 1
-        const offset = size * (1 - ratio * 0.8);
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};position:relative;overflow:hidden;">
-            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};right:${offset}px;top:0;"></div>
-        </div>`;
-    }
-
-    // Waxing Gibbous (112.5-157.5) - mostly lit, small shadow on left
-    if (deg >= 112.5 && deg < 157.5) {
-        const ratio = (deg - 112.5) / 45; // 0 to 1
-        const offset = size * (0.2 + ratio * 0.8);
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};position:relative;overflow:hidden;box-shadow:0 0 ${size / 4}px rgba(254,249,195,0.4);">
-            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};left:-${offset}px;top:0;"></div>
-        </div>`;
-    }
-
-    // Waning Gibbous (202.5-247.5) - mostly lit, small shadow on right
-    if (deg >= 202.5 && deg < 247.5) {
-        const ratio = (deg - 202.5) / 45; // 0 to 1
-        const offset = size * (0.8 - ratio * 0.6);
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};position:relative;overflow:hidden;box-shadow:0 0 ${size / 4}px rgba(254,249,195,0.4);">
-            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};right:-${offset}px;top:0;"></div>
-        </div>`;
-    }
-
-    // Waning Crescent (292.5-337.5) - left edge lit, thin crescent
-    if (deg >= 292.5 && deg < 337.5) {
-        const ratio = (deg - 292.5) / 45; // 0 to 1
-        const offset = size * (0.2 + ratio * 0.8);
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};position:relative;overflow:hidden;">
-            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};left:${offset}px;top:0;"></div>
-        </div>`;
-    }
-
-    // Fallback
-    return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};"></div>`;
+    return `<span style="font-size:${size}px;line-height:1;">${emoji}</span>`;
 }
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];

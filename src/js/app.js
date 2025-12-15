@@ -1,6 +1,64 @@
 import { getEto, getLuckyDays } from '../lib/JapaneseCalendar.js';
 import { getMoonPhase } from '../lib/MoonData.js';
 
+/**
+ * Generate CSS for moon phase visualization
+ * Uses overlay technique to simulate crescent/gibbous shapes
+ * @param {number} degrees - Moon phase in degrees (0=new, 180=full)
+ * @param {number} illumination - Illumination percentage
+ * @returns {string} HTML for moon visualization
+ */
+function getMoonPhaseHTML(degrees, illumination, size = 14) {
+    // Determine if waxing (0-180) or waning (180-360)
+    const isWaxing = degrees <= 180;
+
+    // Calculate the shadow position
+    // For waxing: shadow on LEFT, shrinking from full coverage to none
+    // For waning: shadow on RIGHT, growing from none to full coverage
+
+    // Normalize to 0-1 range for each half
+    let shadowRatio;
+    if (isWaxing) {
+        // 0° = full shadow (new), 180° = no shadow (full)
+        shadowRatio = 1 - (degrees / 180);
+    } else {
+        // 180° = no shadow (full), 360° = full shadow (new)
+        shadowRatio = (degrees - 180) / 180;
+    }
+
+    // Create the moon HTML with CSS-based shadow
+    const moonColor = 'rgb(254, 249, 195)'; // Yellow-100
+    const shadowColor = 'rgb(30, 41, 59)'; // Slate-800
+
+    // Use gradient overlay for crescent effect
+    let gradientDirection, gradientStops;
+
+    if (shadowRatio < 0.05) {
+        // Nearly full - just show the bright moon
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};box-shadow:0 0 ${size / 3}px ${moonColor};"></div>`;
+    } else if (shadowRatio > 0.95) {
+        // Nearly new - just show dark with thin edge
+        const edgeSide = isWaxing ? 'right' : 'left';
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};border-${edgeSide}:1px solid rgba(254,249,195,0.3);"></div>`;
+    } else {
+        // Crescent or gibbous phase
+        // Use ellipse overlay technique
+        const coveragePercent = shadowRatio * 100;
+
+        if (isWaxing) {
+            // Shadow on left (waxing - lit from right)
+            gradientDirection = 'to right';
+            gradientStops = `${shadowColor} 0%, ${shadowColor} ${coveragePercent}%, ${moonColor} ${coveragePercent}%, ${moonColor} 100%`;
+        } else {
+            // Shadow on right (waning - lit from left)
+            gradientDirection = 'to left';
+            gradientStops = `${shadowColor} 0%, ${shadowColor} ${coveragePercent}%, ${moonColor} ${coveragePercent}%, ${moonColor} 100%`;
+        }
+
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(${gradientDirection}, ${gradientStops});box-shadow:0 0 ${size / 4}px rgba(254,249,195,${0.3 * (1 - shadowRatio)});"></div>`;
+    }
+}
+
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
 let currentDate = new Date();
@@ -48,8 +106,8 @@ function renderCurrentStatus() {
             
             <!-- Moon Phase -->
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-full bg-slate-800 relative shadow-lg flex-shrink-0 overflow-hidden">
-                    <div class="absolute inset-0 rounded-full bg-yellow-100" style="opacity: ${moon.illumination / 100}"></div>
+                <div class="flex items-center justify-center" style="width:56px;height:56px;">
+                    ${getMoonPhaseHTML(moon.degrees, parseFloat(moon.illumination), 48)}
                 </div>
                 <div>
                     <p class="text-xs text-indigo-300 uppercase tracking-wider mb-1">MOON</p>
@@ -157,10 +215,8 @@ function renderCalendar(date) {
             
             <div class="mt-auto flex items-center justify-end gap-1 z-10">
                  <span class="text-[10px] text-slate-400 mr-1">${moon.phaseName}</span>
-                 <!-- Moon Icon Placeholder -->
-                 <div class="w-4 h-4 rounded-full bg-slate-700 shadow-inner relative overflow-hidden" title="Age: ${moon.age}">
-                    <div class="absolute inset-0 bg-yellow-100 opacity-${Math.min(100, Math.max(10, moon.illumination))}"></div> 
-                 </div>
+                 <!-- Moon Icon -->
+                 ${getMoonPhaseHTML(moon.degrees, parseFloat(moon.illumination), 16)}
             </div>
 
             <!-- Hover Effect Background -->

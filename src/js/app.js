@@ -7,10 +7,67 @@ let currentDate = new Date();
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    renderCurrentStatus();
     renderCalendar(currentDate);
     setupEventListeners();
     updateHeader();
+    lucide.createIcons();
 });
+
+/**
+ * Render today's status panel
+ */
+function renderCurrentStatus() {
+    const panel = document.getElementById('current-status');
+    const today = new Date();
+
+    const moon = getMoonPhase(today);
+    const eto = getEto(today);
+    const luckyDays = getLuckyDays(today);
+
+    const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日 (${WEEKDAYS[today.getDay()]})`;
+
+    // Lucky badges HTML
+    const luckyBadges = luckyDays.length > 0
+        ? luckyDays.map(l => {
+            const colorClass = l.type === 'tensha' ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-900'
+                : l.type === 'ichiryumanbai' ? 'bg-amber-500/20 text-amber-200 border border-amber-500/30'
+                    : 'bg-indigo-500/20 text-indigo-200 border border-indigo-500/30';
+            return `<span class="inline-block px-2 py-1 rounded text-xs font-bold ${colorClass}">${l.label}</span>`;
+        }).join(' ')
+        : '<span class="text-slate-500 text-sm">特筆すべき吉日はありません</span>';
+
+    panel.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Today's Date -->
+            <div class="flex flex-col justify-center">
+                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">TODAY</p>
+                <h3 class="text-xl font-bold text-white">${dateStr}</h3>
+                <p class="text-sm text-slate-400 mt-1">${eto.etoString}の日</p>
+            </div>
+            
+            <!-- Moon Phase -->
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-full bg-slate-800 relative shadow-lg flex-shrink-0 overflow-hidden">
+                    <div class="absolute inset-0 rounded-full bg-yellow-100" style="opacity: ${moon.illumination / 100}"></div>
+                </div>
+                <div>
+                    <p class="text-xs text-indigo-300 uppercase tracking-wider mb-1">MOON</p>
+                    <div class="text-lg font-medium text-white">${moon.phaseName}</div>
+                    <div class="text-xs text-slate-400">月齢 ${moon.age} / 輝度 ${moon.illumination}%</div>
+                </div>
+            </div>
+            
+            <!-- Lucky Days -->
+            <div>
+                <p class="text-xs text-amber-300 uppercase tracking-wider mb-2">FORTUNE</p>
+                <div class="flex flex-wrap gap-2">
+                    ${luckyBadges}
+                </div>
+            </div>
+        </div>
+    `;
+}
 
 function setupEventListeners() {
     document.getElementById('prev-month').addEventListener('click', () => {

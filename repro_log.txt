@@ -1,22 +1,122 @@
-Date: 2024-01-01
-  Eto: 甲子 (Stem: 0, Branch: 0)
-  Lucky: 天赦日, 一粒万倍日
----
-Date: 2024-01-02
-  Eto: 乙丑 (Stem: 1, Branch: 1)
+Date: 2025-12-01
+  Eto: 甲辰 (Stem: 0, Branch: 4)
   Lucky: None
+---
+Date: 2025-12-02
+  Eto: 乙巳 (Stem: 1, Branch: 5)
+  Lucky: 巳の日
+---
+Date: 2025-12-03
+  Eto: 丙午 (Stem: 2, Branch: 6)
+  Lucky: None
+---
+Date: 2025-12-04
+  Eto: 丁未 (Stem: 3, Branch: 7)
+  Lucky: None
+---
+Date: 2025-12-05
+  Eto: 戊申 (Stem: 4, Branch: 8)
+  Lucky: None
+---
+Date: 2025-12-06
+  Eto: 己酉 (Stem: 5, Branch: 9)
+  Lucky: 一粒万倍日
+---
+Date: 2025-12-07
+  Eto: 庚戌 (Stem: 6, Branch: 10)
+  Lucky: None
+---
+Date: 2025-12-08
+  Eto: 辛亥 (Stem: 7, Branch: 11)
+  Lucky: 一粒万倍日
+---
+Date: 2025-12-09
+  Eto: 壬子 (Stem: 8, Branch: 0)
+  Lucky: 一粒万倍日
+---
+Date: 2025-12-10
+  Eto: 癸丑 (Stem: 9, Branch: 1)
+  Lucky: None
+---
+Date: 2025-12-11
+  Eto: 甲寅 (Stem: 0, Branch: 2)
+  Lucky: 寅の日
+---
+Date: 2025-12-12
+  Eto: 乙卯 (Stem: 1, Branch: 3)
+  Lucky: None
+---
+Date: 2025-12-13
+  Eto: 丙辰 (Stem: 2, Branch: 4)
+  Lucky: None
+---
+Date: 2025-12-14
+  Eto: 丁巳 (Stem: 3, Branch: 5)
+  Lucky: 巳の日
 ---
 Date: 2025-12-15
   Eto: 戊午 (Stem: 4, Branch: 6)
   Lucky: None
 ---
-Date: 2025-01-01
-  Eto: 庚午 (Stem: 6, Branch: 6)
+Date: 2025-12-16
+  Eto: 己未 (Stem: 5, Branch: 7)
   Lucky: None
+---
+Date: 2025-12-17
+  Eto: 庚申 (Stem: 6, Branch: 8)
+  Lucky: None
+---
+Date: 2025-12-18
+  Eto: 辛酉 (Stem: 7, Branch: 9)
+  Lucky: None
+---
+Date: 2025-12-19
+  Eto: 壬戌 (Stem: 8, Branch: 10)
+  Lucky: None
+---
+Date: 2025-12-20
+  Eto: 癸亥 (Stem: 9, Branch: 11)
+  Lucky: 一粒万倍日
 ---
 Date: 2025-12-21
   Eto: 甲子 (Stem: 0, Branch: 0)
   Lucky: 天赦日, 一粒万倍日
+---
+Date: 2025-12-22
+  Eto: 乙丑 (Stem: 1, Branch: 1)
+  Lucky: None
+---
+Date: 2025-12-23
+  Eto: 丙寅 (Stem: 2, Branch: 2)
+  Lucky: 寅の日
+---
+Date: 2025-12-24
+  Eto: 丁卯 (Stem: 3, Branch: 3)
+  Lucky: None
+---
+Date: 2025-12-25
+  Eto: 戊辰 (Stem: 4, Branch: 4)
+  Lucky: None
+---
+Date: 2025-12-26
+  Eto: 己巳 (Stem: 5, Branch: 5)
+  Lucky: 巳の日, 己巳の日
+---
+Date: 2025-12-27
+  Eto: 庚午 (Stem: 6, Branch: 6)
+  Lucky: None
+---
+Date: 2025-12-28
+  Eto: 辛未 (Stem: 7, Branch: 7)
+  Lucky: None
+---
+Date: 2025-12-29
+  Eto: 壬申 (Stem: 8, Branch: 8)
+  Lucky: None
+---
+Date: 2025-12-30
+  Eto: 癸酉 (Stem: 9, Branch: 9)
+  Lucky: None
 ---
 Date: 2025-12-31
   Eto: 甲戌 (Stem: 0, Branch: 10)

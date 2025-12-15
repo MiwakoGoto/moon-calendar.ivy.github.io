@@ -2,14 +2,11 @@
 import { getEto, getLuckyDays } from './src/lib/JapaneseCalendar.js';
 import * as fs from 'fs';
 
-const dates = [
-    '2024-01-01', // Anchor (Should be 甲子)
-    '2024-01-02',
-    '2025-12-15', // Current date (User context)
-    '2025-01-01',
-    '2025-12-21', // Tensha?
-    '2025-12-31'  // Tensha?
-];
+const dates = [];
+// Generate all December 2025 dates
+for (let d = 1; d <= 31; d++) {
+    dates.push(`2025-12-${String(d).padStart(2, '0')}`);
+}
 
 // Clear log file
 try { fs.unlinkSync('repro_log.txt'); } catch (e) { }

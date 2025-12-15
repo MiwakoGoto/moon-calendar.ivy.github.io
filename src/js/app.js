@@ -3,7 +3,7 @@ import { getMoonPhase } from '../lib/MoonData.js';
 
 /**
  * Generate CSS for moon phase visualization
- * Uses overlay technique to simulate crescent/gibbous shapes
+ * Uses overlapping circles technique to simulate realistic crescent/gibbous shapes
  * @param {number} degrees - Moon phase in degrees (0=new, 180=full)
  * @param {number} illumination - Illumination percentage
  * @returns {string} HTML for moon visualization
@@ -12,50 +12,57 @@ function getMoonPhaseHTML(degrees, illumination, size = 14) {
     // Determine if waxing (0-180) or waning (180-360)
     const isWaxing = degrees <= 180;
 
-    // Calculate the shadow position
-    // For waxing: shadow on LEFT, shrinking from full coverage to none
-    // For waning: shadow on RIGHT, growing from none to full coverage
-
-    // Normalize to 0-1 range for each half
-    let shadowRatio;
+    // Calculate phase ratio (0 = new, 1 = full)
+    let phaseRatio;
     if (isWaxing) {
-        // 0° = full shadow (new), 180° = no shadow (full)
-        shadowRatio = 1 - (degrees / 180);
+        phaseRatio = degrees / 180; // 0 to 1
     } else {
-        // 180° = no shadow (full), 360° = full shadow (new)
-        shadowRatio = (degrees - 180) / 180;
+        phaseRatio = (360 - degrees) / 180; // 1 to 0
     }
 
-    // Create the moon HTML with CSS-based shadow
-    const moonColor = 'rgb(254, 249, 195)'; // Yellow-100
-    const shadowColor = 'rgb(30, 41, 59)'; // Slate-800
+    const moonColor = '#fef9c3'; // Yellow-100
+    const shadowColor = '#1e293b'; // Slate-800
 
-    // Use gradient overlay for crescent effect
-    let gradientDirection, gradientStops;
-
-    if (shadowRatio < 0.05) {
-        // Nearly full - just show the bright moon
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};box-shadow:0 0 ${size / 3}px ${moonColor};"></div>`;
-    } else if (shadowRatio > 0.95) {
-        // Nearly new - just show dark with thin edge
+    // Nearly new moon (< 5%)
+    if (phaseRatio < 0.05) {
         const edgeSide = isWaxing ? 'right' : 'left';
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};border-${edgeSide}:1px solid rgba(254,249,195,0.3);"></div>`;
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};border-${edgeSide}:1px solid rgba(254,249,195,0.4);box-sizing:border-box;"></div>`;
+    }
+
+    // Nearly full moon (> 95%)
+    if (phaseRatio > 0.95) {
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};box-shadow:0 0 ${size / 2}px ${moonColor};"></div>`;
+    }
+
+    // Crescent and gibbous phases - use overlapping circle technique
+    // The "shadow" circle overlaps the "lit" circle to create crescent shape
+
+    // Calculate the overlay circle's offset
+    // At phaseRatio 0: fully overlapped (new moon)
+    // At phaseRatio 0.5: overlay at edge (half moon)
+    // At phaseRatio 1: no overlap (full moon)
+
+    const isGibbous = phaseRatio > 0.5;
+
+    // For crescent (0-0.5): shadow circle overlaps lit circle
+    // For gibbous (0.5-1): lit circle is larger/shadow circle is offset far
+
+    if (isGibbous) {
+        // Gibbous moon - mostly lit with small shadow
+        const shadowOffset = (phaseRatio - 0.5) * 2 * size; // 0 to size
+        const offsetDir = isWaxing ? -1 : 1; // Waxing: shadow on left, Waning: shadow on right
+
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};position:relative;overflow:hidden;box-shadow:0 0 ${size / 4}px rgba(254,249,195,0.5);">
+            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};left:${offsetDir * shadowOffset}px;top:0;"></div>
+        </div>`;
     } else {
-        // Crescent or gibbous phase
-        // Use ellipse overlay technique
-        const coveragePercent = shadowRatio * 100;
+        // Crescent moon - mostly shadow with thin lit crescent
+        const overlayOffset = phaseRatio * 2 * size * 0.8; // 0 to 0.8*size
+        const offsetDir = isWaxing ? 1 : -1; // Waxing: lit on right, Waning: lit on left
 
-        if (isWaxing) {
-            // Shadow on left (waxing - lit from right)
-            gradientDirection = 'to right';
-            gradientStops = `${shadowColor} 0%, ${shadowColor} ${coveragePercent}%, ${moonColor} ${coveragePercent}%, ${moonColor} 100%`;
-        } else {
-            // Shadow on right (waning - lit from left)
-            gradientDirection = 'to left';
-            gradientStops = `${shadowColor} 0%, ${shadowColor} ${coveragePercent}%, ${moonColor} ${coveragePercent}%, ${moonColor} 100%`;
-        }
-
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(${gradientDirection}, ${gradientStops});box-shadow:0 0 ${size / 4}px rgba(254,249,195,${0.3 * (1 - shadowRatio)});"></div>`;
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};position:relative;overflow:hidden;">
+            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};left:${offsetDir * overlayOffset}px;top:0;"></div>
+        </div>`;
     }
 }
 

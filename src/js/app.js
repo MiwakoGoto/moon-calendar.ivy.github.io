@@ -2,68 +2,88 @@ import { getEto, getLuckyDays } from '../lib/JapaneseCalendar.js';
 import { getMoonPhase } from '../lib/MoonData.js';
 
 /**
- * Generate CSS for moon phase visualization
- * Uses overlapping circles technique to simulate realistic crescent/gibbous shapes
+ * Generate HTML for moon phase visualization
+ * Uses 8-phase system with accurate shapes
  * @param {number} degrees - Moon phase in degrees (0=new, 180=full)
  * @param {number} illumination - Illumination percentage
  * @returns {string} HTML for moon visualization
  */
 function getMoonPhaseHTML(degrees, illumination, size = 14) {
-    // Determine if waxing (0-180) or waning (180-360)
-    const isWaxing = degrees <= 180;
-
-    // Calculate phase ratio (0 = new, 1 = full)
-    let phaseRatio;
-    if (isWaxing) {
-        phaseRatio = degrees / 180; // 0 to 1
-    } else {
-        phaseRatio = (360 - degrees) / 180; // 1 to 0
-    }
-
     const moonColor = '#fef9c3'; // Yellow-100
     const shadowColor = '#1e293b'; // Slate-800
+    const halfSize = size / 2;
 
-    // Nearly new moon (< 5%)
-    if (phaseRatio < 0.05) {
-        const edgeSide = isWaxing ? 'right' : 'left';
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};border-${edgeSide}:1px solid rgba(254,249,195,0.4);box-sizing:border-box;"></div>`;
+    // Determine phase based on degrees
+    // 0-22.5: New Moon (dark)
+    // 22.5-67.5: Waxing Crescent (right lit, thin curve)
+    // 67.5-112.5: First Quarter (right half lit)
+    // 112.5-157.5: Waxing Gibbous (mostly lit, left shadow curve)
+    // 157.5-202.5: Full Moon (fully lit)
+    // 202.5-247.5: Waning Gibbous (mostly lit, right shadow curve)
+    // 247.5-292.5: Last Quarter (left half lit)
+    // 292.5-337.5: Waning Crescent (left lit, thin curve)
+    // 337.5-360: New Moon (dark)
+
+    const deg = degrees % 360;
+
+    // New Moon (nearly dark)
+    if (deg < 22.5 || deg >= 337.5) {
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};border:1px solid rgba(254,249,195,0.2);box-sizing:border-box;"></div>`;
     }
 
-    // Nearly full moon (> 95%)
-    if (phaseRatio > 0.95) {
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};box-shadow:0 0 ${size / 2}px ${moonColor};"></div>`;
+    // Full Moon (fully lit)
+    if (deg >= 157.5 && deg < 202.5) {
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};box-shadow:0 0 ${size / 3}px rgba(254,249,195,0.6);"></div>`;
     }
 
-    // Crescent and gibbous phases - use overlapping circle technique
-    // The "shadow" circle overlaps the "lit" circle to create crescent shape
+    // First Quarter (right half lit) - straight line division
+    if (deg >= 67.5 && deg < 112.5) {
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(to right, ${shadowColor} 50%, ${moonColor} 50%);"></div>`;
+    }
 
-    // Calculate the overlay circle's offset
-    // At phaseRatio 0: fully overlapped (new moon)
-    // At phaseRatio 0.5: overlay at edge (half moon)
-    // At phaseRatio 1: no overlap (full moon)
+    // Last Quarter (left half lit) - straight line division
+    if (deg >= 247.5 && deg < 292.5) {
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(to left, ${shadowColor} 50%, ${moonColor} 50%);"></div>`;
+    }
 
-    const isGibbous = phaseRatio > 0.5;
-
-    // For crescent (0-0.5): shadow circle overlaps lit circle
-    // For gibbous (0.5-1): lit circle is larger/shadow circle is offset far
-
-    if (isGibbous) {
-        // Gibbous moon - mostly lit with small shadow
-        const shadowOffset = (phaseRatio - 0.5) * 2 * size; // 0 to size
-        const offsetDir = isWaxing ? -1 : 1; // Waxing: shadow on left, Waning: shadow on right
-
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};position:relative;overflow:hidden;box-shadow:0 0 ${size / 4}px rgba(254,249,195,0.5);">
-            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};left:${offsetDir * shadowOffset}px;top:0;"></div>
-        </div>`;
-    } else {
-        // Crescent moon - mostly shadow with thin lit crescent
-        const overlayOffset = phaseRatio * 2 * size * 0.8; // 0 to 0.8*size
-        const offsetDir = isWaxing ? 1 : -1; // Waxing: lit on right, Waning: lit on left
-
+    // Waxing Crescent (22.5-67.5) - right edge lit, thin crescent
+    if (deg >= 22.5 && deg < 67.5) {
+        const ratio = (deg - 22.5) / 45; // 0 to 1
+        const offset = size * (1 - ratio * 0.8);
         return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};position:relative;overflow:hidden;">
-            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};left:${offsetDir * overlayOffset}px;top:0;"></div>
+            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};right:${offset}px;top:0;"></div>
         </div>`;
     }
+
+    // Waxing Gibbous (112.5-157.5) - mostly lit, small shadow on left
+    if (deg >= 112.5 && deg < 157.5) {
+        const ratio = (deg - 112.5) / 45; // 0 to 1
+        const offset = size * (0.2 + ratio * 0.8);
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};position:relative;overflow:hidden;box-shadow:0 0 ${size / 4}px rgba(254,249,195,0.4);">
+            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};left:-${offset}px;top:0;"></div>
+        </div>`;
+    }
+
+    // Waning Gibbous (202.5-247.5) - mostly lit, small shadow on right
+    if (deg >= 202.5 && deg < 247.5) {
+        const ratio = (deg - 202.5) / 45; // 0 to 1
+        const offset = size * (0.8 - ratio * 0.6);
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};position:relative;overflow:hidden;box-shadow:0 0 ${size / 4}px rgba(254,249,195,0.4);">
+            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};right:-${offset}px;top:0;"></div>
+        </div>`;
+    }
+
+    // Waning Crescent (292.5-337.5) - left edge lit, thin crescent
+    if (deg >= 292.5 && deg < 337.5) {
+        const ratio = (deg - 292.5) / 45; // 0 to 1
+        const offset = size * (0.2 + ratio * 0.8);
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonColor};position:relative;overflow:hidden;">
+            <div style="position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};left:${offset}px;top:0;"></div>
+        </div>`;
+    }
+
+    // Fallback
+    return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${shadowColor};"></div>`;
 }
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];

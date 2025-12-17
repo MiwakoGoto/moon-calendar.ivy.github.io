@@ -3,45 +3,95 @@ import { getMoonPhase } from '../lib/MoonData.js';
 
 /**
  * Generate HTML for moon phase visualization
- * Uses Unicode moon phase emoji for reliable, accurate display
+ * Uses 28-phase CSS rendering with overlapping ellipse technique for realistic crescents
  * @param {number} degrees - Moon phase in degrees (0=new, 180=full)
  * @param {number} illumination - Illumination percentage
- * @param {number} size - Font size in pixels
+ * @param {number} size - Size in pixels
  * @returns {string} HTML for moon visualization
  */
 function getMoonPhaseHTML(degrees, illumination, size = 14) {
     const deg = degrees % 360;
+    const radius = size / 2;
 
-    // 8-phase moon emoji mapping
-    // 🌑 New Moon (0°)
-    // 🌒 Waxing Crescent (45°)
-    // 🌓 First Quarter (90°)
-    // 🌔 Waxing Gibbous (135°)
-    // 🌕 Full Moon (180°)
-    // 🌖 Waning Gibbous (225°)
-    // 🌗 Last Quarter (270°)
-    // 🌘 Waning Crescent (315°)
+    // Colors
+    const moonLight = '#e8e8e8'; // Light gray-white for lit portion
+    const moonDark = '#1a1a2e';  // Dark blue-black for shadow
+    const moonGlow = 'rgba(255, 255, 255, 0.15)'; // Subtle glow
 
-    let emoji;
-    if (deg < 22.5 || deg >= 337.5) {
-        emoji = '🌑'; // New Moon
-    } else if (deg < 67.5) {
-        emoji = '🌒'; // Waxing Crescent
-    } else if (deg < 112.5) {
-        emoji = '🌓'; // First Quarter
-    } else if (deg < 157.5) {
-        emoji = '🌔'; // Waxing Gibbous
-    } else if (deg < 202.5) {
-        emoji = '🌕'; // Full Moon
-    } else if (deg < 247.5) {
-        emoji = '🌖'; // Waning Gibbous
-    } else if (deg < 292.5) {
-        emoji = '🌗'; // Last Quarter
+    // Determine phase position (0-27 for 28 phases)
+    // Each phase covers ~12.86 degrees (360/28)
+    const phaseIndex = Math.floor(deg / 12.857) % 28;
+
+    // Calculate illumination fraction for smooth transitions
+    // 0 = new moon, 0.5 = quarter, 1 = full moon
+    let illuminationFraction;
+    if (deg <= 180) {
+        illuminationFraction = deg / 180; // 0 to 1 (new to full, waxing)
     } else {
-        emoji = '🌘'; // Waning Crescent
+        illuminationFraction = (360 - deg) / 180; // 1 to 0 (full to new, waning)
     }
 
-    return `<span style="font-size:${size}px;line-height:1;">${emoji}</span>`;
+    const isWaxing = deg <= 180;
+
+    // Special cases: New Moon and Full Moon
+    if (phaseIndex === 0 || phaseIndex === 27) {
+        // New Moon - dark with subtle ring
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${moonDark};border:1px solid rgba(255,255,255,0.15);box-sizing:border-box;"></div>`;
+    }
+
+    if (phaseIndex === 14) {
+        // Full Moon - fully lit with glow
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:radial-gradient(circle at 40% 40%, #fff 0%, ${moonLight} 50%, #c0c0c0 100%);box-shadow:0 0 ${size / 3}px ${moonGlow};"></div>`;
+    }
+
+    // For crescent and gibbous phases, use overlapping ellipse technique
+    // The "terminator" (shadow edge) is curved, not straight
+
+    // Calculate the ellipse width for the shadow overlay
+    // At quarters (phaseIndex 7 or 21), it's a straight line (ellipse width = 0)
+    // At crescents, the ellipse is wide and overlaps significantly
+    // At gibbous, the ellipse is on the opposite side
+
+    let overlayWidth, overlayPosition, baseColor, overlayColor;
+
+    if (phaseIndex >= 1 && phaseIndex <= 7) {
+        // Waxing Crescent to First Quarter (right side lit)
+        const progress = phaseIndex / 7; // 0 to 1
+        overlayWidth = size * (1 - progress * 0.8);
+        baseColor = moonLight;
+        overlayColor = moonDark;
+        overlayPosition = `right:${size * progress * 0.3}px;`;
+    } else if (phaseIndex >= 8 && phaseIndex <= 14) {
+        // First Quarter to Full Moon (waxing gibbous)
+        const progress = (phaseIndex - 7) / 7; // 0 to 1
+        overlayWidth = size * (1 - progress);
+        baseColor = moonLight;
+        overlayColor = moonDark;
+        overlayPosition = `left:-${size * 0.2 + (size * 0.8 * progress)}px;`;
+    } else if (phaseIndex >= 15 && phaseIndex <= 21) {
+        // Full Moon to Last Quarter (waning gibbous)
+        const progress = (phaseIndex - 14) / 7; // 0 to 1
+        overlayWidth = size * progress;
+        baseColor = moonLight;
+        overlayColor = moonDark;
+        overlayPosition = `right:-${size * (1 - progress * 0.8)}px;`;
+    } else {
+        // Last Quarter to New Moon (waning crescent, left side lit)
+        const progress = (phaseIndex - 21) / 6; // 0 to 1
+        overlayWidth = size * (0.2 + progress * 0.8);
+        baseColor = moonLight;
+        overlayColor = moonDark;
+        overlayPosition = `left:${size * (1 - progress) * 0.3}px;`;
+    }
+
+    // Add subtle gradient to lit portion for realism
+    const gradientBase = phaseIndex <= 14
+        ? `radial-gradient(circle at 30% 30%, #fff 0%, ${moonLight} 40%, #b0b0b0 100%)`
+        : `radial-gradient(circle at 70% 30%, #fff 0%, ${moonLight} 40%, #b0b0b0 100%)`;
+
+    return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${gradientBase};position:relative;overflow:hidden;">
+        <div style="position:absolute;width:${overlayWidth}px;height:${size}px;border-radius:50%;background:${overlayColor};${overlayPosition}top:0;"></div>
+    </div>`;
 }
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];

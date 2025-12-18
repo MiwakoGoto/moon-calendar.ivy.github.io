@@ -63,20 +63,16 @@ function getMoonPhaseHTML(degrees, illumination, size = 14) {
 
     if (deg <= 90) {
         // Waxing Crescent: thin crescent on RIGHT side
-        // Terminator curves to Right (Sweep 0) to make it thin.
-        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 0 ${cx} ${cy - r}`;
+        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 1 ${cx} ${cy - r}`;
     } else if (deg <= 180) {
         // Waxing Gibbous: mostly lit, small shadow on LEFT
-        // Terminator curves to Left (Sweep 1) to make it fat.
-        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 1 ${cx} ${cy - r}`;
+        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 0 ${cx} ${cy - r}`;
     } else if (deg <= 270) {
         // Waning Gibbous: mostly lit, shadow growing on RIGHT
-        // Terminator curves to Right (Sweep 0) to make it fat.
-        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 0 ${cx} ${cy - r}`;
+        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 1 ${cx} ${cy - r}`;
     } else {
         // Waning Crescent: thin crescent on LEFT side
-        // Terminator curves to Left (Sweep 1) to make it thin.
-        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 1 ${cx} ${cy - r}`;
+        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 0 ${cx} ${cy - r}`;
     }
 
     return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">

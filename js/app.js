@@ -63,19 +63,20 @@ function getMoonPhaseHTML(degrees, illumination, size = 14) {
 
     if (deg <= 90) {
         // Waxing Crescent: thin crescent on RIGHT side
-        // Right semicircle lit, curved terminator pushes into it from left
-        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 1 ${cx} ${cy - r}`;
+        // Right semicircle lit, curved terminator pushes into it from left? NO.
+        // Terminator must curve to the RIGHT (Sweep 0) to make a thin crescent.
+        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 0 ${cx} ${cy - r}`;
     } else if (deg <= 180) {
         // Waxing Gibbous: mostly lit, small shadow on LEFT
-        // Right semicircle lit + bulge to the left
-        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 0 ${cx} ${cy - r}`;
+        // Right semicircle lit + bulge to the left (Sweep 1)
+        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 1 ${cx} ${cy - r}`;
     } else if (deg <= 270) {
         // Waning Gibbous: mostly lit, shadow growing on RIGHT
-        // Left semicircle lit + bulge to the right
+        // Left semicircle lit + bulge to the right (Sweep 0)
         path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 0 ${cx} ${cy - r}`;
     } else {
         // Waning Crescent: thin crescent on LEFT side
-        // Left semicircle lit, curved terminator pushes into it from right
+        // Left semicircle lit, curved terminator pushes into it from right (Sweep 1)
         path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 1 ${cx} ${cy - r}`;
     }
 

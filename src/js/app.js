@@ -4,6 +4,17 @@ import { getMoonPhase } from '../lib/MoonData.js';
 /**
  * Generate SVG for moon phase visualization
  * Uses proper arc paths for accurate crescent and gibbous shapes
+ * 
+ * Phase progression:
+ * 0° = New Moon (dark)
+ * 0-90° = Waxing Crescent (right side lit, crescent grows)
+ * 90° = First Quarter (right half lit)
+ * 90-180° = Waxing Gibbous (right side mostly lit)
+ * 180° = Full Moon (fully lit)
+ * 180-270° = Waning Gibbous (left side mostly lit, shadow on right)
+ * 270° = Last Quarter (left half lit)
+ * 270-360° = Waning Crescent (left side lit, thin crescent)
+ * 
  * @param {number} degrees - Moon phase in degrees (0=new, 180=full)
  * @param {number} illumination - Illumination percentage
  * @param {number} size - Size in pixels
@@ -33,38 +44,39 @@ function getMoonPhaseHTML(degrees, illumination, size = 14) {
         </svg>`;
     }
 
-    // Calculate the "squeeze" factor for the inner ellipse (terminator curve)
-    // At quarters (90° and 270°), the terminator is a straight line (squeeze = 0)
-    // At crescents/gibbous, the terminator is curved (squeeze > 0)
-    let squeeze;
+    // Calculate terminator curve factor
+    // At quarters (90°, 270°), terminator is straight (factor=0)
+    // At crescent/gibbous, terminator is curved (factor>0)
+    let curveFactor;
     if (deg <= 90) {
-        squeeze = 1 - (deg / 90); // 1 to 0
+        curveFactor = (90 - deg) / 90; // 1→0 as we approach first quarter
     } else if (deg <= 180) {
-        squeeze = (deg - 90) / 90; // 0 to 1
+        curveFactor = (deg - 90) / 90; // 0→1 as we approach full moon
     } else if (deg <= 270) {
-        squeeze = 1 - ((deg - 180) / 90); // 1 to 0
+        curveFactor = (270 - deg) / 90; // 1→0 as we approach last quarter
     } else {
-        squeeze = (deg - 270) / 90; // 0 to 1
+        curveFactor = (deg - 270) / 90; // 0→1 as we approach new moon
     }
 
-    // Inner ellipse x-radius (for the curved terminator)
-    const innerRx = r * squeeze;
-
-    // Build the lit portion path
+    const innerRx = r * curveFactor;
     let path;
 
     if (deg <= 90) {
-        // Waxing crescent: right side lit (small crescent growing)
+        // Waxing Crescent: thin crescent on RIGHT side
+        // Right semicircle lit, curved terminator pushes into it from left
         path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 1 ${cx} ${cy - r}`;
     } else if (deg <= 180) {
-        // Waxing gibbous: right side mostly lit
+        // Waxing Gibbous: mostly lit, small shadow on LEFT
+        // Right semicircle lit + bulge to the left
         path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 0 ${cx} ${cy - r}`;
     } else if (deg <= 270) {
-        // Waning gibbous: left side mostly lit
-        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 1 ${cx} ${cy - r}`;
-    } else {
-        // Waning crescent: left side lit (small crescent shrinking)
+        // Waning Gibbous: mostly lit, shadow growing on RIGHT
+        // Left semicircle lit + bulge to the right
         path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 0 ${cx} ${cy - r}`;
+    } else {
+        // Waning Crescent: thin crescent on LEFT side
+        // Left semicircle lit, curved terminator pushes into it from right
+        path = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${innerRx} ${r} 0 0 1 ${cx} ${cy - r}`;
     }
 
     return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
@@ -269,11 +281,9 @@ function openModal(date, moon, luckyDays, eto) {
                     <i data-lucide="moon"></i> MOON PHASE
                 </h4>
                 <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 rounded-full bg-slate-800 relative shadow-2xl">
-                         <div class="absolute inset-0 rounded-full bg-yellow-100 opacity-${moon.illumination} blur-sm"></div>
-                    </div>
+                    ${getMoonPhaseHTML(moon.degrees, parseFloat(moon.illumination), 64)}
                     <div>
-                        <div class="text-xl font-medium">${moon.phaseName}</div>
+                        <div class="text-xl font-medium">${moon.phaseName || '—'}</div>
                         <div class="text-sm text-slate-400">月齢: ${moon.age}</div>
                         <div class="text-sm text-slate-500">輝度: ${moon.illumination}%</div>
                     </div>

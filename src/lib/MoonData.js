@@ -30,13 +30,10 @@ export function getMoonPhase(date) {
     // 0: New, 90: First Q, 180: Full, 270: Last Q.
     const deg = solarElongation;
     if (deg < 5 || deg > 355) phaseName = '新月';
-    else if (deg < 85) phaseName = '三日月';
-    else if (deg < 95) phaseName = '上弦の月';
-    else if (deg < 175) phaseName = '十三夜';
-    else if (deg < 185) phaseName = '満月';
-    else if (deg < 265) phaseName = '十八夜';
-    else if (deg < 275) phaseName = '下弦の月';
-    else phaseName = '有明の月';
+    else if (deg >= 85 && deg < 95) phaseName = '上弦の月';
+    else if (deg >= 175 && deg < 185) phaseName = '満月';
+    else if (deg >= 265 && deg < 275) phaseName = '下弦の月';
+    else phaseName = '';
 
     return {
         phaseName,

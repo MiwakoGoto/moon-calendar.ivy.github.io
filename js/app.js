@@ -283,7 +283,7 @@ function openModal(date, moon, luckyDays, eto) {
                 <div class="flex items-center gap-4">
                     ${getMoonPhaseHTML(moon.degrees, parseFloat(moon.illumination), 64)}
                     <div>
-                        <div class="text-xl font-medium">${moon.phaseName || '—'}</div>
+                        ${moon.phaseName ? `<div class="text-xl font-medium">${moon.phaseName}</div>` : ''}
                         <div class="text-sm text-slate-400">月齢: ${moon.age}</div>
                         <div class="text-sm text-slate-500">輝度: ${moon.illumination}%</div>
                     </div>
